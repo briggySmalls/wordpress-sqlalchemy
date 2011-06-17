@@ -1,4 +1,3 @@
-import sqlalchemy as sa
 import sqlalchemy.orm as orm
 import tables
 
@@ -175,16 +174,6 @@ orm.mapper(
             foreign_keys=[tables.term_relationships.c.object_id,
                           tables.term_relationships.c.term_taxonomy_id],
         ),
-        'categories': orm.relation(
-            Category,
-            secondary=tables.term_relationships,
-            primaryjoin=(tables.posts.c.ID
-                         == tables.term_relationships.c.object_id),
-            secondaryjoin=(tables.term_relationships.c.term_taxonomy_id
-                           == tables.term_taxonomy.c.term_taxonomy_id),
-            foreign_keys=[tables.term_relationships.c.object_id,
-                          tables.term_relationships.c.term_taxonomy_id],
-        ),
         'comments': orm.relation(Comment, backref='post'),
     },
 )
@@ -195,16 +184,6 @@ orm.mapper(
     Link,
     tables.links,
     properties={
-        'categories': orm.relation(
-            LinkCategory,
-            secondary=tables.term_relationships,
-            primaryjoin=(tables.links.c.link_id
-                         == tables.term_relationships.c.object_id),
-            secondaryjoin=(tables.term_relationships.c.term_taxonomy_id
-                           == tables.term_taxonomy.c.term_taxonomy_id),
-            foreign_keys=[tables.term_relationships.c.object_id,
-                          tables.term_relationships.c.term_taxonomy_id],
-        ),
     },
 )
 
