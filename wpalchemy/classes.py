@@ -1,5 +1,5 @@
 import sqlalchemy.orm as orm
-import tables
+from wpalchemy import tables
 
 metadata = tables.metadata
 
