@@ -15,7 +15,7 @@ class AutoRepr:
         return "<%s %s>" % (class_name, ", ".join(attribute_strings))
 
 
-class Comments(AutoRepr, Base):
+class Comment(AutoRepr, Base):
     __tablename__ = 'wp_comments'
     comment_ID = Column(Integer, primary_key=True)
     comment_post_ID = Column(Integer, ForeignKey('wp_posts.ID'))
@@ -34,7 +34,7 @@ class Comments(AutoRepr, Base):
     user_id = Column(Integer, ForeignKey('wp_users.ID'))
 
 
-class Links(AutoRepr, Base):
+class Link(AutoRepr, Base):
     __tablename__ = 'wp_links'
     link_id = Column(Integer, primary_key=True)
     link_url = Column(String(length=255))
@@ -51,7 +51,7 @@ class Links(AutoRepr, Base):
     link_rss = Column(String(length=255))
 
 
-class Options(AutoRepr, Base):
+class Option(AutoRepr, Base):
     __tablename__ = 'wp_options'
     option_id = Column(Integer, primary_key=True)
     blog_id = Column(Integer, primary_key=True)
@@ -60,7 +60,7 @@ class Options(AutoRepr, Base):
     autoload = Column(String(length=3))
 
 
-class Postmeta(AutoRepr, Base):
+class PostMeta(AutoRepr, Base):
     __tablename__ = 'wp_postmeta'
     meta_id = Column(Integer, primary_key=True)
     post_id = Column(Integer, ForeignKey('wp_posts.ID'))
@@ -68,7 +68,7 @@ class Postmeta(AutoRepr, Base):
     meta_value = Column(Text(length=None), primary_key=False)
 
 
-class Posts(AutoRepr, Base):
+class Post(AutoRepr, Base):
     __tablename__ = 'wp_posts'
     ID = Column(Integer, primary_key=True)
     post_author = Column(Integer, ForeignKey('wp_users.ID'))
@@ -96,7 +96,7 @@ class Posts(AutoRepr, Base):
 
 
 # TODO: replace with SQLAlchemy many-to-many construct
-class TermRelationships(AutoRepr, Base):
+class TermRelationship(AutoRepr, Base):
     __tablename__ = 'wp_term_relationships'
     object_id = Column(Integer, ForeignKey('wp_post.ID'), primary_key=True)
     term_taxonomy_id = Column(Integer, ForeignKey('wp_term_taxonomy.term_taxonomy_id'), primary_key=True)
@@ -116,7 +116,7 @@ class TermTaxonomy(AutoRepr, Base):
     )
 
 
-class Terms(AutoRepr, Base):
+class Term(AutoRepr, Base):
     __tablename__ = 'wp_terms'
     term_id = Column(Integer, primary_key=True)
     name = Column(String(length=55))
@@ -128,7 +128,7 @@ class Terms(AutoRepr, Base):
     )
 
 
-class Usermeta(AutoRepr, Base):
+class UserMeta(AutoRepr, Base):
     __tablename__ = 'wp_usermeta'
     umeta_id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('wp_users.ID'))
@@ -136,7 +136,7 @@ class Usermeta(AutoRepr, Base):
     meta_value = Column(Text(length=None), primary_key=False)
 
 
-class Users(AutoRepr, Base):
+class User(AutoRepr, Base):
     __tablename__ = 'wp_users'
     ID = Column(Integer, primary_key=True)
     user_login = Column(String(length=60))
