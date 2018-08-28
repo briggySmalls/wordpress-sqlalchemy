@@ -35,7 +35,6 @@ class Comment(AutoRepr, Base):
     user_id = Column(Integer, ForeignKey('wp_users.ID'))
 
     post = relationship('Post', back_populates="comments")
-    parent = relationship('Comment', back_populates="children")
     children = relationship(
         'Comment',
         backref=backref('parent', remote_side=[comment_ID])
