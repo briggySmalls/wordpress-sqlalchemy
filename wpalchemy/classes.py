@@ -155,7 +155,7 @@ class Term(Base):
     __table__ = term_taxonomy_join
 
     id = column_property(
-        term_taxonomy_table.c.term_taxonomy_id,
+        term_taxonomy_table.c.term_id,
         term_table.c.term_id)
 
     posts = relationship(
