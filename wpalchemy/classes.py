@@ -80,10 +80,33 @@ class PostMeta(AutoRepr, Base):
     post = relationship('Post', back_populates='meta')
 
 
+METADATA = MetaData()
+term_table = Table(
+    "wp_terms", METADATA,
+    Column('term_id', Integer, primary_key=True),
+    Column('name', String(length=55)),
+    Column('slug', String(length=200)),
+    Column('term_group', Integer),
+    UniqueConstraint('slug'),
+)
+
+term_taxonomy_table = Table(
+    "wp_term_taxonomy", METADATA,
+    Column('term_taxonomy_id', Integer, primary_key=True),
+    Column('term_id', Integer, ForeignKey('wp_terms.term_id')),
+    Column('taxonomy', String(length=32)),
+    Column('description', Text(length=None)),
+    Column('parent', Integer, ForeignKey('wp_term_taxonomy.term_taxonomy_id')),
+    Column('count', Integer),
+    UniqueConstraint('term_id', 'taxonomy'),
+)
+
+term_taxonomy_join = join(term_table, term_taxonomy_table)
+
 TERM_RELATIONSHIP_TABLE = Table(
     'wp_term_relationships', Base.metadata,
-    Column('object_id', Integer, ForeignKey('Post.ID'), primary_key=True),
-    Column('term_taxonomy_id', Integer, ForeignKey('Term.term_taxonomy_id'), primary_key=True)
+    Column('object_id', Integer, ForeignKey('wp_posts.ID'), primary_key=True),
+    Column('term_taxonomy_id', Integer, ForeignKey(term_taxonomy_table.c.term_taxonomy_id), primary_key=True)
 )
 
 
@@ -119,48 +142,24 @@ class Post(AutoRepr, Base):
         backref=backref('parent', remote_side=[ID]))
     comments = relationship('Comment', back_populates="post")
     meta = relationship('PostMeta', back_populates="post")
-    taxonomies = relationship(
+    terms = relationship(
         "Term",
         secondary=TERM_RELATIONSHIP_TABLE,
         back_populates='posts')
-
-
-METADATA = MetaData()
-term_table = Table(
-    "wp_terms", METADATA,
-    Column('term_id', Integer, primary_key=True),
-    Column('name', String(length=55)),
-    Column('slug', String(length=200)),
-    Column('term_group', Integer),
-    UniqueConstraint('slug'),
-)
-
-term_taxonomy_table = Table(
-    "wp_term_taxonomy", METADATA,
-    Column('term_taxonomy_id', Integer, primary_key=True),
-    Column('term_id', Integer, ForeignKey('wp_terms.term_id')),
-    Column('taxonomy', String(length=32)),
-    Column('description', Text(length=None)),
-    Column('parent', Integer, ForeignKey('wp_term_taxonomy.term_taxonomy_id')),
-    Column('count', Integer),
-    UniqueConstraint('term_id', 'taxonomy'),
-)
-
-
-term_taxonomy_join = join(term_taxonomy_table, term_table)
 
 
 class Term(Base):
     __table__ = term_taxonomy_join
 
     id = column_property(
-        term_taxonomy_table.c.term_id,
-        term_table.c.term_id)
+        term_table.c.term_id,
+        term_taxonomy_table.c.term_id)
+    taxonomy_id = term_taxonomy_table.c.term_taxonomy_id
 
     posts = relationship(
         "Post",
         secondary=TERM_RELATIONSHIP_TABLE,
-        back_populates='taxonomies')
+        back_populates='terms')
 
 
 class UserMeta(AutoRepr, Base):
