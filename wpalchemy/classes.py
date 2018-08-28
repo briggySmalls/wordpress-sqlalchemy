@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime, UniqueConstraint
+from sqlalchemy import Table, Column, Integer, String, ForeignKey, Text, DateTime, UniqueConstraint
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -33,6 +34,11 @@ class Comment(AutoRepr, Base):
     comment_parent = Column(Integer, ForeignKey('wp_comments.comment_ID'))
     user_id = Column(Integer, ForeignKey('wp_users.ID'))
 
+    post = relationship('Post', back_populates="comments")
+    parent = relationship('Comment', back_populates="children")
+    children = relationship('Comment', back_populates="parent")
+    user = relationship('User', back_populates="comments")
+
 
 class Link(AutoRepr, Base):
     __tablename__ = 'wp_links'
@@ -50,6 +56,8 @@ class Link(AutoRepr, Base):
     link_notes = Column(Text(length=None))
     link_rss = Column(String(length=255))
 
+    owner = relationship('User', back_populates="links")
+
 
 class Option(AutoRepr, Base):
     __tablename__ = 'wp_options'
@@ -66,6 +74,15 @@ class PostMeta(AutoRepr, Base):
     post_id = Column(Integer, ForeignKey('wp_posts.ID'))
     meta_key = Column(String(length=255), primary_key=False)
     meta_value = Column(Text(length=None), primary_key=False)
+
+    post = relationship('Post', back_populates='meta')
+
+
+TERM_RELATIONSHIP_TABLE = Table(
+    'wp_term_relationships', Base.metadata,
+    Column('object_id', Integer, ForeignKey('left.id')),
+    Column('term_taxonomy_id', Integer, ForeignKey('right.id'))
+)
 
 
 class Post(AutoRepr, Base):
@@ -94,12 +111,14 @@ class Post(AutoRepr, Base):
     post_mime_type = Column(String(length=100))
     comment_count = Column(Integer)
 
-
-# TODO: replace with SQLAlchemy many-to-many construct
-class TermRelationship(AutoRepr, Base):
-    __tablename__ = 'wp_term_relationships'
-    object_id = Column(Integer, ForeignKey('wp_post.ID'), primary_key=True)
-    term_taxonomy_id = Column(Integer, ForeignKey('wp_term_taxonomy.term_taxonomy_id'), primary_key=True)
+    author = relationship('User', back_populates='posts')
+    parent = relationship('Post', back_populates='children')
+    comments = relationship('Post', back_populates="post")
+    meta = relationship('PostMeta', back_populates="post")
+    taxonomies = relationship(
+        "TermTaxonomy",
+        secondary=TERM_RELATIONSHIP_TABLE,
+        back_populates='posts')
 
 
 class TermTaxonomy(AutoRepr, Base):
@@ -115,6 +134,12 @@ class TermTaxonomy(AutoRepr, Base):
         UniqueConstraint('term_id', 'taxonomy'),
     )
 
+    term = relationship("Term", back_populates='taxonomy')
+    posts = relationship(
+        "Post",
+        secondary=TERM_RELATIONSHIP_TABLE,
+        back_populates="taxonomies")
+
 
 class Term(AutoRepr, Base):
     __tablename__ = 'wp_terms'
@@ -127,6 +152,8 @@ class Term(AutoRepr, Base):
         UniqueConstraint('slug'),
     )
 
+    taxonomy = relationship("TermTaxonomy", back_populates='term')
+
 
 class UserMeta(AutoRepr, Base):
     __tablename__ = 'wp_usermeta'
@@ -134,6 +161,8 @@ class UserMeta(AutoRepr, Base):
     user_id = Column(Integer, ForeignKey('wp_users.ID'))
     meta_key = Column(String(length=255), primary_key=False)
     meta_value = Column(Text(length=None), primary_key=False)
+
+    user = relationship('User', back_populates='meta')
 
 
 class User(AutoRepr, Base):
@@ -148,3 +177,8 @@ class User(AutoRepr, Base):
     user_activation_key = Column(String(length=60))
     user_status = Column(Integer)
     display_name = Column(String(length=250))
+
+    comments = relationship('Comment', back_populates='user')
+    meta = relationship('UserMeta', back_populates='user')
+    links = relationship('Link', back_populates='owner')
+    posts = relationship('Post', back_populates='author')
