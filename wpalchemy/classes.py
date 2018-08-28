@@ -36,7 +36,10 @@ class Comment(AutoRepr, Base):
 
     post = relationship('Post', back_populates="comments")
     parent = relationship('Comment', back_populates="children")
-    children = relationship('Comment', back_populates="parent")
+    children = relationship(
+        'Comment',
+        backref=backref('parent', remote_side=[comment_ID])
+    )
     user = relationship('User', back_populates="comments")
 
 
@@ -80,8 +83,8 @@ class PostMeta(AutoRepr, Base):
 
 TERM_RELATIONSHIP_TABLE = Table(
     'wp_term_relationships', Base.metadata,
-    Column('object_id', Integer, ForeignKey('left.id')),
-    Column('term_taxonomy_id', Integer, ForeignKey('right.id'))
+    Column('object_id', Integer, ForeignKey('Post.ID'), primary_key=True),
+    Column('term_taxonomy_id', Integer, ForeignKey('TermTaxonomy.term_taxonomy_id'), primary_key=True)
 )
 
 
@@ -112,7 +115,9 @@ class Post(AutoRepr, Base):
     comment_count = Column(Integer)
 
     author = relationship('User', back_populates='posts')
-    parent = relationship('Post', back_populates='children')
+    children = relationship(
+        'Post',
+        backref=backref('parent', remote_side=[post_parent]))
     comments = relationship('Post', back_populates="post")
     meta = relationship('PostMeta', back_populates="post")
     taxonomies = relationship(
@@ -134,7 +139,7 @@ class TermTaxonomy(AutoRepr, Base):
         UniqueConstraint('term_id', 'taxonomy'),
     )
 
-    term = relationship("Term", back_populates='taxonomy')
+    term = relationship("Term", back_populates='taxonomy', uselist=False)
     posts = relationship(
         "Post",
         secondary=TERM_RELATIONSHIP_TABLE,
@@ -152,7 +157,7 @@ class Term(AutoRepr, Base):
         UniqueConstraint('slug'),
     )
 
-    taxonomy = relationship("TermTaxonomy", back_populates='term')
+    taxonomy = relationship("TermTaxonomy", back_populates='term', uselist=False)
 
 
 class UserMeta(AutoRepr, Base):
