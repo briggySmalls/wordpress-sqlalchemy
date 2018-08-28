@@ -17,6 +17,7 @@ class AutoRepr:
 
 
 class Comment(AutoRepr, Base):
+    # Table fields
     __tablename__ = 'wp_comments'
     comment_ID = Column(Integer, primary_key=True)
     comment_post_ID = Column(Integer, ForeignKey('wp_posts.ID'))
@@ -34,6 +35,7 @@ class Comment(AutoRepr, Base):
     comment_parent = Column(Integer, ForeignKey('wp_comments.comment_ID'))
     user_id = Column(Integer, ForeignKey('wp_users.ID'))
 
+    # ORM layer relationships
     post = relationship('Post', back_populates="comments")
     children = relationship(
         'Comment',
@@ -43,6 +45,7 @@ class Comment(AutoRepr, Base):
 
 
 class Link(AutoRepr, Base):
+    # Table fields
     __tablename__ = 'wp_links'
     link_id = Column(Integer, primary_key=True)
     link_url = Column(String(length=255))
@@ -58,6 +61,7 @@ class Link(AutoRepr, Base):
     link_notes = Column(Text(length=None))
     link_rss = Column(String(length=255))
 
+    # ORM layer relationships
     owner = relationship('User', back_populates="links")
 
 
@@ -81,7 +85,7 @@ class PostMeta(AutoRepr, Base):
 
 
 METADATA = MetaData()
-term_table = Table(
+TERM_TABLE = Table(
     "wp_terms", METADATA,
     Column('term_id', Integer, primary_key=True),
     Column('name', String(length=55)),
@@ -90,7 +94,7 @@ term_table = Table(
     UniqueConstraint('slug'),
 )
 
-term_taxonomy_table = Table(
+TERM_TAXONOMY_TABLE = Table(
     "wp_term_taxonomy", METADATA,
     Column('term_taxonomy_id', Integer, primary_key=True),
     Column('term_id', Integer, ForeignKey('wp_terms.term_id')),
@@ -101,12 +105,12 @@ term_taxonomy_table = Table(
     UniqueConstraint('term_id', 'taxonomy'),
 )
 
-term_taxonomy_join = join(term_table, term_taxonomy_table)
+TERM_TAXONOMY_JOIN = join(TERM_TABLE, TERM_TAXONOMY_TABLE)
 
 TERM_RELATIONSHIP_TABLE = Table(
     'wp_term_relationships', Base.metadata,
     Column('object_id', Integer, ForeignKey('wp_posts.ID'), primary_key=True),
-    Column('term_taxonomy_id', Integer, ForeignKey(term_taxonomy_table.c.term_taxonomy_id), primary_key=True)
+    Column('term_taxonomy_id', Integer, ForeignKey(TERM_TAXONOMY_TABLE.c.term_taxonomy_id), primary_key=True)
 )
 
 
@@ -149,12 +153,11 @@ class Post(AutoRepr, Base):
 
 
 class Term(Base):
-    __table__ = term_taxonomy_join
+    __table__ = TERM_TAXONOMY_JOIN
 
     id = column_property(
-        term_table.c.term_id,
-        term_taxonomy_table.c.term_id)
-    taxonomy_id = term_taxonomy_table.c.term_taxonomy_id
+        TERM_TABLE.c.term_id,
+        TERM_TAXONOMY_TABLE.c.term_id)
 
     posts = relationship(
         "Post",
