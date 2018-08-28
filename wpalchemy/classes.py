@@ -83,7 +83,7 @@ class PostMeta(AutoRepr, Base):
 TERM_RELATIONSHIP_TABLE = Table(
     'wp_term_relationships', Base.metadata,
     Column('object_id', Integer, ForeignKey('Post.ID'), primary_key=True),
-    Column('term_taxonomy_id', Integer, ForeignKey('TermTaxonomy.term_taxonomy_id'), primary_key=True)
+    Column('term_taxonomy_id', Integer, ForeignKey('Term.term_taxonomy_id'), primary_key=True)
 )
 
 
