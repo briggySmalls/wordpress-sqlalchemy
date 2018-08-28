@@ -126,8 +126,18 @@ class Post(AutoRepr, Base):
         back_populates='posts')
 
 
+METADATA = MetaData()
+term_table = Table(
+    "wp_terms", METADATA,
+    Column('term_id', Integer, primary_key=True),
+    Column('name', String(length=55)),
+    Column('slug', String(length=200)),
+    Column('term_group', Integer),
+    UniqueConstraint('slug'),
+)
+
 term_taxonomy_table = Table(
-    "wp_term_taxonomy", MetaData(),
+    "wp_term_taxonomy", METADATA,
     Column('term_taxonomy_id', Integer, primary_key=True),
     Column('term_id', Integer, ForeignKey('wp_terms.term_id')),
     Column('taxonomy', String(length=32)),
@@ -135,15 +145,6 @@ term_taxonomy_table = Table(
     Column('parent', Integer, ForeignKey('wp_term_taxonomy.term_taxonomy_id')),
     Column('count', Integer),
     UniqueConstraint('term_id', 'taxonomy'),
-)
-
-term_table = Table(
-    "wp_terms", MetaData(),
-    Column('term_id', Integer, primary_key=True),
-    Column('name', String(length=55)),
-    Column('slug', String(length=200)),
-    Column('term_group', Integer),
-    UniqueConstraint('slug'),
 )
 
 
