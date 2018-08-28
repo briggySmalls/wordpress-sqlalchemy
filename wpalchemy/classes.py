@@ -1,5 +1,5 @@
-from sqlalchemy import Table, Column, Integer, String, ForeignKey, Text, DateTime, UniqueConstraint
-from sqlalchemy.orm import relationship
+from sqlalchemy import Table, Column, Integer, String, ForeignKey, Text, DateTime, UniqueConstraint, MetaData, join
+from sqlalchemy.orm import relationship, backref, column_property
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -121,43 +121,46 @@ class Post(AutoRepr, Base):
     comments = relationship('Post', back_populates="post")
     meta = relationship('PostMeta', back_populates="post")
     taxonomies = relationship(
-        "TermTaxonomy",
+        "Term",
         secondary=TERM_RELATIONSHIP_TABLE,
         back_populates='posts')
 
 
-class TermTaxonomy(AutoRepr, Base):
-    __tablename__ = 'wp_term_taxonomy'
-    term_taxonomy_id = Column(Integer, primary_key=True)
-    term_id = Column(Integer, ForeignKey('wp_terms.term_id'))
-    taxonomy = Column(String(length=32))
-    description = Column(Text(length=None))
-    parent = Column(Integer, ForeignKey('wp_term_taxonomy.term_taxonomy_id'))
-    count = Column(Integer)
+term_taxonomy_table = Table(
+    "wp_term_taxonomy", MetaData(),
+    Column('term_taxonomy_id', Integer, primary_key=True),
+    Column('term_id', Integer, ForeignKey('wp_terms.term_id')),
+    Column('taxonomy', String(length=32)),
+    Column('description', Text(length=None)),
+    Column('parent', Integer, ForeignKey('wp_term_taxonomy.term_taxonomy_id')),
+    Column('count', Integer),
+    UniqueConstraint('term_id', 'taxonomy'),
+)
 
-    __table_args__ = (
-        UniqueConstraint('term_id', 'taxonomy'),
-    )
+term_table = Table(
+    "wp_terms", MetaData(),
+    Column('term_id', Integer, primary_key=True),
+    Column('name', String(length=55)),
+    Column('slug', String(length=200)),
+    Column('term_group', Integer),
+    UniqueConstraint('slug'),
+)
 
-    term = relationship("Term", back_populates='taxonomy', uselist=False)
+
+term_taxonomy_join = join(term_taxonomy_table, term_table)
+
+
+class Term(Base):
+    __table__ = term_taxonomy_join
+
+    id = column_property(
+        term_taxonomy_table.c.term_taxonomy_id,
+        term_table.c.term_id)
+
     posts = relationship(
         "Post",
         secondary=TERM_RELATIONSHIP_TABLE,
-        back_populates="taxonomies")
-
-
-class Term(AutoRepr, Base):
-    __tablename__ = 'wp_terms'
-    term_id = Column(Integer, primary_key=True)
-    name = Column(String(length=55))
-    slug = Column(String(length=200))
-    term_group = Column(Integer)
-
-    __table_args__ = (
-        UniqueConstraint('slug'),
-    )
-
-    taxonomy = relationship("TermTaxonomy", back_populates='term', uselist=False)
+        back_populates='taxonomies')
 
 
 class UserMeta(AutoRepr, Base):
