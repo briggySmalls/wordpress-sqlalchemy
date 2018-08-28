@@ -118,7 +118,7 @@ class Post(AutoRepr, Base):
     children = relationship(
         'Post',
         backref=backref('parent', remote_side=[ID]))
-    comments = relationship('Post', back_populates="post")
+    comments = relationship('Comment', back_populates="post")
     meta = relationship('PostMeta', back_populates="post")
     taxonomies = relationship(
         "Term",
