@@ -66,6 +66,7 @@ class Link(AutoRepr, Base):
 
 
 class Option(AutoRepr, Base):
+    # Table fields
     __tablename__ = 'wp_options'
     option_id = Column(Integer, primary_key=True)
     blog_id = Column(Integer, primary_key=True)
@@ -75,12 +76,14 @@ class Option(AutoRepr, Base):
 
 
 class PostMeta(AutoRepr, Base):
+    # Table fields
     __tablename__ = 'wp_postmeta'
     meta_id = Column(Integer, primary_key=True)
     post_id = Column(Integer, ForeignKey('wp_posts.ID'))
     meta_key = Column(String(length=255), primary_key=False)
     meta_value = Column(Text(length=None), primary_key=False)
 
+    # ORM layer relationships
     post = relationship('Post', back_populates='meta')
 
 
@@ -115,6 +118,7 @@ TERM_RELATIONSHIP_TABLE = Table(
 
 
 class Post(AutoRepr, Base):
+    # Table fields
     __tablename__ = 'wp_posts'
     ID = Column(Integer, primary_key=True)
     post_author = Column(Integer, ForeignKey('wp_users.ID'))
@@ -140,6 +144,7 @@ class Post(AutoRepr, Base):
     post_mime_type = Column(String(length=100))
     comment_count = Column(Integer)
 
+    # ORM layer relationships
     author = relationship('User', back_populates='posts')
     children = relationship(
         'Post',
@@ -153,12 +158,13 @@ class Post(AutoRepr, Base):
 
 
 class Term(Base):
+    # Table fields
     __table__ = TERM_TAXONOMY_JOIN
-
     id = column_property(
         TERM_TABLE.c.term_id,
         TERM_TAXONOMY_TABLE.c.term_id)
 
+    # ORM layer relationships
     posts = relationship(
         "Post",
         secondary=TERM_RELATIONSHIP_TABLE,
@@ -166,16 +172,19 @@ class Term(Base):
 
 
 class UserMeta(AutoRepr, Base):
+    # Table fields
     __tablename__ = 'wp_usermeta'
     umeta_id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('wp_users.ID'))
     meta_key = Column(String(length=255), primary_key=False)
     meta_value = Column(Text(length=None), primary_key=False)
 
+    # ORM layer relationships
     user = relationship('User', back_populates='meta')
 
 
 class User(AutoRepr, Base):
+    # Table fields
     __tablename__ = 'wp_users'
     ID = Column(Integer, primary_key=True)
     user_login = Column(String(length=60))
@@ -188,6 +197,7 @@ class User(AutoRepr, Base):
     user_status = Column(Integer)
     display_name = Column(String(length=250))
 
+    # ORM layer relationships
     comments = relationship('Comment', back_populates='user')
     meta = relationship('UserMeta', back_populates='user')
     links = relationship('Link', back_populates='owner')
