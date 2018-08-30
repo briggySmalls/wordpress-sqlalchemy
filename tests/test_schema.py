@@ -2,7 +2,7 @@
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.sql import select, and_, or_, not_
+from sqlalchemy.sql import select, and_
 
 import pytest
 
@@ -74,10 +74,10 @@ def test_term_relationships(engine, session_maker):  # pylint: disable=redefined
         tables.term_relationships,
         tables.term_taxonomies,
         tables.terms]).where(
-        and_(
-            tables.term_relationships.c.object_id == tables.posts.c.ID,
-            tables.term_relationships.c.term_taxonomy_id == tables.term_taxonomies.c.term_taxonomy_id,
-            tables.term_taxonomies.c.term_id == tables.terms.c.term_id))
+            and_(
+                tables.term_relationships.c.object_id == tables.posts.c.ID,
+                tables.term_relationships.c.term_taxonomy_id == tables.term_taxonomies.c.term_taxonomy_id,
+                tables.term_taxonomies.c.term_id == tables.terms.c.term_id))
     result = session.connection().execute(selection)
     assert result.returns_rows
     rows = result.fetchall()
