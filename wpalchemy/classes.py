@@ -87,9 +87,8 @@ class PostMeta(AutoRepr, Base):
     post = relationship('Post', back_populates='meta')
 
 
-METADATA = MetaData()
 TERM_TABLE = Table(
-    "wp_terms", METADATA,
+    "wp_terms", Base.metadata,
     Column('term_id', Integer, primary_key=True),
     Column('name', String(length=55)),
     Column('slug', String(length=200)),
@@ -98,7 +97,7 @@ TERM_TABLE = Table(
 )
 
 TERM_TAXONOMY_TABLE = Table(
-    "wp_term_taxonomy", METADATA,
+    "wp_term_taxonomy", Base.metadata,
     Column('term_taxonomy_id', Integer, primary_key=True),
     Column('term_id', Integer, ForeignKey('wp_terms.term_id')),
     Column('taxonomy', String(length=32)),
