@@ -54,8 +54,12 @@ def test_term(engine, session_maker):  # pylint: disable=redefined-outer-name
 
 def test_term_relationships(engine, session_maker):  # pylint: disable=redefined-outer-name
     # Create some posts
-    taste = classes.Post(post_name="taste")
-    touch = classes.Post(post_name="touch")
+    taste = classes.Post(
+        post_name="taste", post_title='', post_content='', post_excerpt='',
+        guid='', post_mime_type='')
+    touch = classes.Post(
+        post_name="touch", post_title='', post_content='', post_excerpt='',
+        guid='', post_mime_type='')
     # Create some terms
     earth = classes.Term(
         name="Earth",
